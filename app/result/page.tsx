@@ -23,7 +23,8 @@ export default function ResultPage() {
   }
   
   // 用查表方式取得
-  const laptopInfo = rawLaptopInfo[laptop || "general"]
+  const laptopInfo = rawLaptopInfo[(laptop || "general") as keyof typeof rawLaptopInfo]
+
   
 
   return (

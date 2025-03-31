@@ -49,9 +49,19 @@ export default function QuizPage() {
           n: 1,
         }),
       })
-
+      
       const imageData = await imageRes.json()
+      
+      // 🛑 加這段錯誤檢查
+      if (!imageData || !imageData.data || !Array.isArray(imageData.data) || !imageData.data[0]) {
+        console.error("圖片 API 回傳異常：", imageData)
+        alert("圖片生成失敗，請稍後再試 🥺")
+        setIsLoading(false)
+        return
+      }
+      
       const imageUrl = imageData.data[0].url
+      
 
       const laptopType = inferLaptopType(style)
 

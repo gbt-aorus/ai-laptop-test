@@ -16,6 +16,9 @@ export default function QuizPage() {
   const [color, setColor] = useState("")
   const [style, setStyle] = useState("")
   const [deskItems, setDeskItems] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async () => {
@@ -35,6 +38,18 @@ export default function QuizPage() {
       const result = await res.json()
       const dallePrompt = result.dallePrompt
 
+      // 如果有上傳圖片，轉 base64
+let imageBase64 = null
+if (imageFile) {
+  const reader = new FileReader()
+  imageBase64 = await new Promise<string | null>((resolve) => {
+    reader.onloadend = () => {
+      resolve(reader.result as string)
+    }
+    reader.readAsDataURL(imageFile)
+  })
+}
+
       const imageRes = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: {
@@ -47,6 +62,7 @@ export default function QuizPage() {
           size: "1024x1024",
           response_format: "url",
           n: 1,
+          ...(imageBase64 && { image: imageBase64 })  // 有圖才加
         }),
       })
       
@@ -144,6 +160,36 @@ export default function QuizPage() {
             </button>
           </section>
         )}
+      {/* 新增圖片上傳區塊 */}
+        <div className="mt-6">
+         <label className="block font-medium mb-2">📷 請上傳你現在的桌面一角（可選）</label>
+          <input
+             type="file"
+             accept="image/*"
+             onChange={(e) => {
+               const file = e.target.files?.[0]
+               if (file) {
+                 setImageFile(file)
+                 setImagePreview(URL.createObjectURL(file))
+                }
+             }}
+         />
+         {imagePreview && (
+            <div className="mt-4 relative w-48">
+              <img src={imagePreview} alt="預覽圖" className="rounded shadow" />
+              <button
+                className="absolute top-1 right-1 text-white bg-black/50 px-2 rounded text-sm"
+                onClick={() => {
+                 setImageFile(null)
+                setImagePreview(null)
+               }}
+               >
+        ✕
+              </button>
+    </div>
+  )}
+</div>
+
       </main>
 
       {/* 🐦 Loading 畫面 */}
